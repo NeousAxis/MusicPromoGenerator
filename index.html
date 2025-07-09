@@ -160,7 +160,7 @@
             e.preventDefault();
 
             const soundcloudUrl = document.getElementById('soundcloudUrl').value;
-            const userKeywords = document.getElementById('userKeywords').value.split(',').map(k => k.trim());
+            const userKeywords = document.getElementById('userKeywords').value.split(',').map(k => k.trim()).filter(k => k !== '');
             const imageStyle = document.getElementById('imageStyle').value;
             // const apiKey = apiKeyInput.value; // Removed: API key no longer from frontend
             const trackTitle = document.getElementById('trackTitle').value; // Get the new track title
@@ -213,7 +213,7 @@
         // Regenerate Image Button Event Listener
         regenerateImageBtn.addEventListener('click', async () => {
             const soundcloudUrl = document.getElementById('soundcloudUrl').value;
-            const userKeywords = document.getElementById('userKeywords').value.split(',').map(k => k.trim());
+            const userKeywords = document.getElementById('userKeywords').value.split(',').map(k => k.trim()).filter(k => k !== '');
             const imageStyle = document.getElementById('imageStyle').value;
             // const apiKey = apiKeyInput.value; // Removed: API key no longer from frontend
             const trackTitle = document.getElementById('trackTitle').value;
@@ -275,25 +275,6 @@
         // Go to Upscale.media Button Event Listener
         upscaleImageBtn.addEventListener('click', () => {
             window.open('https://www.upscale.media/', '_blank');
-        });
-
-        // Upscale Image Button Event Listener
-        upscaleImageBtn.addEventListener('click', () => {
-            const imageUrl = promoImageEl.src;
-            if (imageUrl) {
-                // Create a temporary link element to trigger download
-                const link = document.createElement('a');
-                link.href = imageUrl;
-                link.download = 'generated_image.png'; // Suggest a filename
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-
-                // Open Upscale.media in a new tab
-                window.open('https://www.upscale.media/', '_blank');
-            } else {
-                alert('No image to upscale. Please generate content first.');
-            }
         });
     </script>
 </body>
