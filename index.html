@@ -121,10 +121,6 @@
                 <label for="imageStyle">Image Style</label>
                 <input type="text" id="imageStyle" placeholder="e.g., futuristic neon, minimalist, psychedelic" required>
             </div>
-            <div class="form-group">
-                <label for="apiKey">OpenAI API Key</label>
-                <input type="password" id="apiKey" required>
-            </div>
             <button type="submit">Generate Content</button>
         </form>
 
@@ -150,18 +146,14 @@
         const resultsDiv = document.getElementById('results');
         const promoTextEl = document.getElementById('promoText');
         const promoImageEl = document.getElementById('promoImage');
-        const apiKeyInput = document.getElementById('apiKey');
         const regenerateImageBtn = document.getElementById('regenerateImageBtn');
         const downloadImageBtn = document.getElementById('downloadImageBtn');
         const upscaleImageBtn = document.getElementById('upscaleImageBtn');
-        const actionButtonsDiv = document.getElementById('actionButtons'); // New: Get the action buttons container
+        const actionButtonsDiv = document.getElementById('actionButtons');
 
         // On page load, try to get the API key from local storage
         window.addEventListener('load', () => {
-            const savedApiKey = localStorage.getItem('openaiApiKey');
-            if (savedApiKey) {
-                apiKeyInput.value = savedApiKey;
-            }
+            // Removed API key from local storage logic
         });
 
         promoForm.addEventListener('submit', async (e) => {
@@ -170,16 +162,15 @@
             const soundcloudUrl = document.getElementById('soundcloudUrl').value;
             const userKeywords = document.getElementById('userKeywords').value.split(',').map(k => k.trim());
             const imageStyle = document.getElementById('imageStyle').value;
-            const apiKey = apiKeyInput.value;
+            // const apiKey = apiKeyInput.value; // Removed: API key no longer from frontend
             const trackTitle = document.getElementById('trackTitle').value; // Get the new track title
 
-            if (!soundcloudUrl || userKeywords.length === 0 || !apiKey || !imageStyle) {
+            if (!soundcloudUrl || userKeywords.length === 0 || !imageStyle) { // Removed apiKey from check
                 alert('Please fill all fields.');
                 return;
             }
             
-            // Save the API key to local storage for future use
-            localStorage.setItem('openaiApiKey', apiKey);
+            // Removed API key from local storage logic
 
             loadingDiv.style.display = 'block';
             resultsDiv.style.display = 'none';
@@ -194,7 +185,7 @@
                     body: JSON.stringify({
                         soundcloudUrl: soundcloudUrl,
                         userKeywords: userKeywords,
-                        apiKey: apiKey,
+                        // apiKey: apiKey, // Removed: API key no longer from frontend
                         imageStyle: imageStyle,
                         trackTitle: trackTitle // Send the new track title
                     })
@@ -224,10 +215,10 @@
             const soundcloudUrl = document.getElementById('soundcloudUrl').value;
             const userKeywords = document.getElementById('userKeywords').value.split(',').map(k => k.trim());
             const imageStyle = document.getElementById('imageStyle').value;
-            const apiKey = apiKeyInput.value;
+            // const apiKey = apiKeyInput.value; // Removed: API key no longer from frontend
             const trackTitle = document.getElementById('trackTitle').value;
 
-            if (!soundcloudUrl || userKeywords.length === 0 || !apiKey || !imageStyle) {
+            if (!soundcloudUrl || userKeywords.length === 0 || !imageStyle) { // Removed apiKey from check
                 alert('Please fill all fields.');
                 return;
             }
@@ -244,7 +235,7 @@
                     body: JSON.stringify({
                         soundcloudUrl: soundcloudUrl,
                         userKeywords: userKeywords,
-                        apiKey: apiKey,
+                        // apiKey: apiKey, // Removed: API key no longer from frontend
                         imageStyle: imageStyle,
                         trackTitle: trackTitle
                     })
