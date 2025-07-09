@@ -4,6 +4,18 @@
 # Cache Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Fichiers d'environnement (si vous en ajoutez plus tard)
+# Répertoires d'environnement virtuels
+venv/
+env/
+.venv/
+
+# Fichiers d'environnement
 .env
+
+# Fichiers de build et de distribution
+build/
+dist/
+*.egg-info/
