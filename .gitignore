@@ -1,0 +1,9 @@
+# Fichiers système macOS
+.DS_Store
+
+# Cache Python
+__pycache__/
+*.pyc
+
+# Fichiers d'environnement (si vous en ajoutez plus tard)
+.env
