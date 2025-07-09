@@ -3,37 +3,59 @@ import json
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from urllib.parse import urlparse
+import re
 
 app = Flask(__name__)
 CORS(app)
 
 def get_soundcloud_track_info(url):
     """
-    Extracts basic info from a SoundCloud URL, ignoring share tracking parameters.
+    Extracts basic info from a SoundCloud URL, attempting to get a readable title.
     """
     print(f"Parsing SoundCloud URL: {url}...")
+    artist = "Unknown Artist"
+    title = "Unknown Track"
+
     try:
         parsed_url = urlparse(url)
-        path_parts = parsed_url.path.strip('/').split('/')
-        
+        path_parts = [part for part in parsed_url.path.strip('/').split('/') if part]
+
         if len(path_parts) >= 2:
-            # Assuming the structure is soundcloud.com/artist/track-title
+            # Attempt to get artist from the second to last part
             artist = path_parts[-2].replace('-', ' ').title()
-            title = path_parts[-1].replace('-', ' ').title()
-        else:
-            artist = "Unknown Artist"
-            title = "Unknown Title"
             
-        return {
-            "title": title,
-            "artist": artist,
-        }
+            # Attempt to get title from the last part
+            potential_title = path_parts[-1]
+            
+            # Remove common SoundCloud ID patterns (e.g., -123456789)
+            # This regex looks for a hyphen followed by 1 or more digits at the end of the string
+            title = re.sub(r'-\d+$', '', potential_title).replace('-', ' ').title()
+            
+            # If after cleaning, the title is empty or still looks like an ID, use a fallback
+            is_id_like = False
+            if title:
+                cleaned_title_for_check = title.replace(' ', '') # Remove spaces for check
+                if re.fullmatch(r'[0-9a-zA-Z]+', cleaned_title_for_check) and len(cleaned_title_for_check) < 20:
+                    is_id_like = True
+
+            if not title or is_id_like:
+                title = "SoundCloud Track"
+
+        elif len(path_parts) == 1:
+            # If only one part, it might be a user profile or a short URL
+            artist = path_parts[0].replace('-', ' ').title()
+            title = "SoundCloud Track"
+
     except Exception as e:
-        print(f"Could not parse SoundCloud URL: {e}")
-        return {
-            "title": "Sample Track",
-            "artist": "Sample Artist",
-        }
+        print(f"Error parsing SoundCloud URL: {e}")
+        # Fallback to default values if any error occurs during parsing
+        artist = "Unknown Artist"
+        title = "SoundCloud Track"
+
+    return {
+        "title": title,
+        "artist": artist,
+    }
 
 def generate_promotional_text(api_key, track_info, user_keywords):
     """
@@ -104,7 +126,7 @@ def generate_image_url(api_key, track_info, user_keywords, image_style):
         "model": "dall-e-3",
         "prompt": prompt,
         "n": 1,
-        "size": "1024x1024"
+        "size": "1792x1024"
     }
     
     response = requests.post("https://api.openai.com/v1/images/generations", headers=headers, data=json.dumps(data))
@@ -128,14 +150,16 @@ def api_generate():
         soundcloud_url = data.get('soundcloudUrl')
         user_keywords = data.get('userKeywords')
         api_key = data.get('apiKey')
-        # A default style is provided here, but we expect the frontend to send one.
-        image_style = data.get('imageStyle', 'Modern and minimalist digital art') 
+        image_style = data.get('imageStyle', 'Modern and minimalist digital art')
+        provided_track_title = data.get('trackTitle') # New: Get provided track title
 
-        if not all([soundcloud_url, user_keywords, api_key]):
+        if not all([soundcloud_url, user_keywords]):
             return jsonify({"error": "Missing required fields"}), 400
 
-        # 1. Extract info from URL
+        # 1. Extract info from URL or use provided title
         track_info = get_soundcloud_track_info(soundcloud_url)
+        if provided_track_title:
+            track_info['title'] = provided_track_title # Override with provided title
         
         # 2. Generate promotional text
         promo_text = generate_promotional_text(api_key, track_info, user_keywords)
@@ -151,7 +175,34 @@ def api_generate():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/regenerate_image', methods=['POST'])
+def api_regenerate_image():
+    try:
+        data = request.get_json()
+        soundcloud_url = data.get('soundcloudUrl')
+        user_keywords = data.get('userKeywords')
+        api_key = data.get('apiKey')
+        image_style = data.get('imageStyle', 'Modern and minimalist digital art')
+        provided_track_title = data.get('trackTitle')
+
+        if not all([soundcloud_url, user_keywords]):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Extract info from URL or use provided title
+        track_info = get_soundcloud_track_info(soundcloud_url)
+        if provided_track_title:
+            track_info['title'] = provided_track_title
+
+        # Generate image only
+        image_url = generate_image_url(api_key, track_info, user_keywords, image_style)
+        
+        return jsonify({
+            "imageUrl": image_url
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     print("Starting Flask server on http://127.0.0.1:5001")
     app.run(host='0.0.0.0', port=5001, debug=True)
-
